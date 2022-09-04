@@ -107,9 +107,14 @@ const navigation = [
 
 const user = computed(() => store.state.user.data).value;
 
-const logout = () => {
-  store.commit('logout');
-  router.push({ name: 'Login' });
+const logout = async () => {
+  try {
+    const response = await store.dispatch('logout');
+
+    if(response.success) router.push({ name: 'Login' });
+  } catch (err) {
+    // to be determined
+  };
 }
 
 </script>
