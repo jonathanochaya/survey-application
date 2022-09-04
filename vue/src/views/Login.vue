@@ -68,9 +68,9 @@ const user = {
 
 const login = async () => {
   try{
-    const response = await store.dispatch('login', user);
+    await store.dispatch('login', user);
 
-    if(response) router.push({ name: 'Dashboard' });
+    router.push({ name: 'Dashboard' });
   } catch (err) {
     errorMsg.value = err.response.data.message;
   }

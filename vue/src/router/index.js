@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 
 import DashboardLayout from '../components/DashboardLayout.vue';
 import AuthLayout from '../components/AuthLayout.vue';
+import SurveyView from '../views/SurveyView.vue';
 import Dashboard from '../views/Dashboard.vue';
 import Register from '../views/Register.vue';
 import Survey from '../views/Survey.vue';
@@ -23,7 +24,17 @@ const routes = [
         path: '/surveys',
         name: 'Surveys',
         component: Survey
-      }
+      },
+      {
+        path: '/surveys/:id',
+        name: 'SurveyView',
+        component: SurveyView
+      },
+      {
+        path: '/surveys/create',
+        name: 'SurveyCreate',
+        component: SurveyView
+      },
     ],
     meta: { authLogin: true }
   },
@@ -47,7 +58,7 @@ const routes = [
       }
     ],
     meta: { authGuest: true }
-  }
+  },
 ];
 
 const router = createRouter({
