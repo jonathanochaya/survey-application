@@ -206,6 +206,8 @@
       const result = await store.dispatch('saveSurvey', model.value);
 
       if(result) {
+        model.value = result;
+
         router.push({
           name: "SurveyView",
           params: {id: result.id},
@@ -213,6 +215,18 @@
       }
     } catch(err) {
       console.log(err.message);
+    }
+  }
+
+  const onImageChoose = (ev) => {
+    const file = ev.target.files[0];
+
+    const reader = new FileReader();
+
+    reader.readAsDataURL(file);
+    reader.onload = () => {
+      model.value.image = reader.result;
+      model.value.image_url = reader.result;
     }
   }
 

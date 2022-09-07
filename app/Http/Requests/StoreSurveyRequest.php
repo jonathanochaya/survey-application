@@ -26,6 +26,7 @@ class StoreSurveyRequest extends FormRequest
     {
         return [
             'title' => ['required', 'string', 'max:1000'],
+            'image' => ['nullable', 'string'],
             'user_id' => [Rule::exists('users', 'id')],
             'status' => ['required', 'boolean'],
             'description' => ['nullable', 'string'],

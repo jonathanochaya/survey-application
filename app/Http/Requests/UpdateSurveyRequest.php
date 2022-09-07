@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateSurveyRequest extends FormRequest
 {
@@ -13,7 +14,9 @@ class UpdateSurveyRequest extends FormRequest
      */
     public function authorize()
     {
-        return true;
+        $survey = $this->route('survey');
+
+        return $this->user()->id !== $survey->user_id;
     }
 
     /**
@@ -24,7 +27,20 @@ class UpdateSurveyRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'title' => ['required', 'string', 'max:1000'],
+            'image' => ['nullable', 'string'],
+            'user_id' => ['required', Rule::exists('users', 'id')],
+            'status' => ['required', 'boolean'],
+            'description' => ['nullable', 'string'],
+            'expire_date' => ['nullable', 'date', 'after:tomorrow'],
+            'questions' => ['array']
         ];
+    }
+
+    public function prepareForValidation()
+    {
+        $this->merge([
+            'user_id' => $this->user()->id
+        ]);
     }
 }

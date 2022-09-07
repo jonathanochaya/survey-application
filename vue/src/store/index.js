@@ -122,6 +122,8 @@ const store = createStore({
       return data;
     },
     saveSurvey: async ({ commit, state }, survey) => {
+      delete survey.image_url;
+
       if(survey.id) {
         const { data } = await api.put(`/survey/${survey.id}`, survey, {
           headers: {
