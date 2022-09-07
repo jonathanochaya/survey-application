@@ -88,6 +88,14 @@ const store = createStore({
       state.user.token = payload.token
 
       sessionStorage.setItem('_tok', payload.token);
+    },
+    saveSurvey: (state, survey) => {
+      state.surveys = [...state.surveys, survey];
+    },
+    updateSurvey: (state, survey) => {
+      state.surveys = state.surveys.map(item => {
+        return item.id === survey.id? survey: item;
+      });
     }
   },
   actions: {
@@ -112,6 +120,27 @@ const store = createStore({
 
       commit('logout');
       return data;
+    },
+    saveSurvey: async ({ commit, state }, survey) => {
+      if(survey.id) {
+        const { data } = await api.put(`/survey/${survey.id}`, survey, {
+          headers: {
+            Authorization: `Bearer ${state.user.token}`
+          }
+        });
+
+        commit('updateSurvey', data.data);
+        return data.data;
+      } else {
+        const { data } = await api.post(`/survey`, survey, {
+          headers: {
+            Authorization: `Bearer ${state.user.token}`
+          }
+        });
+
+        commit('updateSurvey', data.data);
+        return data.data;
+      }
     }
   },
   modules: {}
