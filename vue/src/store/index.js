@@ -96,6 +96,11 @@ const store = createStore({
       state.surveys = state.surveys.map(item => {
         return item.id === survey.id? survey: item;
       });
+    },
+    deleteSurvey: (state, id) => {
+      state.surveys = state.surveys.filter(survey => {
+        return survey.id !== id;
+      });
     }
   },
   actions: {
@@ -143,6 +148,20 @@ const store = createStore({
         commit('updateSurvey', data.data);
         return data.data;
       }
+    },
+    deleteSurvey: async ({ commit, state }, id) => {
+      // send ajax request - once deleted
+      const response = await api.delete(`/survey/${id}`, {
+        headers: {
+          Authorization: `Bearer ${state.user.token}`,
+        }
+      });
+
+      // reduce the state
+      if(response.status === 204) commit('deleteSurvey', id);
+
+      // return to caller
+      return response.status;
     }
   },
   modules: {}

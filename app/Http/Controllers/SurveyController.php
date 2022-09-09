@@ -100,7 +100,7 @@ class SurveyController extends Controller
         }
 
         $survey->delete();
-        return response('', 204);
+        return response()->json('', 204);
     }
 
     private function saveEncodedImage($imageStr)

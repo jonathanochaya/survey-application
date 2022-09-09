@@ -5,6 +5,20 @@
         <h1 class="text-3xl font-bold text-gray-900">
           {{ model? model.title: "Create a Survey"}}
         </h1>
+
+        <button class="py-2 px-3 text-white bg-red-500 rounded-md hover:bg-red-600" @click="deleteSurvey" v-if="route.params.id">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-5 w-5 inline-block -mt-1"
+            viewBox="0 0 20 20"
+            fill="currentColor">
+            <path
+              fill-rule="evenodd"
+              d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+              clip-rule="evenodd"/>
+          </svg>
+          Delete Survey
+        </button>
       </div>
     </template>
 
@@ -169,6 +183,7 @@
     questions: [],
   });
 
+  // check whether user is updating survey/viewing
   if(route.params.id) {
     const survey = store.state.surveys.find((survey) => {
       return survey.id === parseInt(route.params.id);
@@ -177,6 +192,7 @@
     if(survey) model.value = survey;
   }
 
+  // new survey question template
   const addQuestion = (index) => {
     const newQuestion = {
       id: uuidv4(),
@@ -189,6 +205,7 @@
     model.value.questions.splice(index, 0, newQuestion);
   }
 
+  /* delete question and change question event handlers */
   const deleteQuestion = (question) => {
     model.value.questions = model.value.questions.filter(item => {
       item.id !== question.id
@@ -201,6 +218,20 @@
     });
   }
 
+  // handle upload of image and previewing
+  const onImageChoose = (ev) => {
+    const file = ev.target.files[0];
+
+    const reader = new FileReader();
+
+    reader.readAsDataURL(file);
+    reader.onload = () => {
+      model.value.image = reader.result;
+      model.value.image_url = reader.result;
+    }
+  }
+
+  // handle saving of survey data to store and api
   const saveSurvey = async () => {
     try {
       const result = await store.dispatch('saveSurvey', model.value);
@@ -218,15 +249,17 @@
     }
   }
 
-  const onImageChoose = (ev) => {
-    const file = ev.target.files[0];
+  // delete survey method
+  const deleteSurvey = () => {
+    if(confirm('Are you sure - you want to delete survey?')) {
+      try {
+        const response = store.dispatch('deleteSurvey', model.value.id);
 
-    const reader = new FileReader();
-
-    reader.readAsDataURL(file);
-    reader.onload = () => {
-      model.value.image = reader.result;
-      model.value.image_url = reader.result;
+        if(response) router.push({ name: 'Surveys' });
+      } catch (err) {
+        // handle error gracefully
+        console.log(err.message);
+      }
     }
   }
 
