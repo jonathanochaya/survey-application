@@ -185,7 +185,7 @@
 
   // check whether user is updating survey/viewing
   if(route.params.id) {
-    const survey = store.state.surveys.find((survey) => {
+    const survey = store.state.surveys.data.find((survey) => {
       return survey.id === parseInt(route.params.id);
     });
 

@@ -1,77 +1,16 @@
 import { createStore } from 'vuex';
 import api from '../apis';
 
-const tmpSurveys = [
-  {
-    id: 100,
-    title: 'TheCodeHolic YouTube channel content',
-    slug: 'thecodeholic-youtube-channel-content',
-    status: 'draft',
-    image: '#',
-    description: 'My name is zura. <br>I am web developer 9+ years of experience',
-    created_at: '2021-12-20 18:00:00',
-    updated_at: '2021-12-20 18:00:00',
-    expire_date: '2021-12-31 18:00:00',
-    questions: [
-      {
-        id: 1,
-        type: 'select',
-        question: 'from which country are you?',
-        description: null,
-        data: {
-          options: [
-            {
-              uuid: '1afbc-24kksksha-ck1li2',
-              text: 'USA'
-            },
-            {
-              uuid: '2afbc-27kksksha-ck1li3',
-              text: 'Germany'
-            },
-            {
-              uuid: '3afbc-20kksksha-ck1li4',
-              text: 'United Kingdom'
-            }
-          ]
-        }
-      },
-      {
-        id: 1,
-        type: 'checkbox',
-        question: 'which language videos do you want to see on my channel?',
-        description: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Vel nobis porro voluptatum, eos placeat tempora, ex accusantium veritatis, impedit optio ipsum dolores tenetur totam amet. Qui nesciunt repellendus dicta beatae.',
-        data: {
-          options: [
-            {
-              uuid: '1afbc-24kksksha-ck1li2',
-              text: 'JavaScript'
-            },
-            {
-              uuid: '2afbc-27kksksha-ck1li3',
-              text: 'HTML + CSS'
-            },
-            {
-              uuid: '3afbc-20kksksha-ck1li4',
-              text: 'All of the above'
-            },
-            {
-              uuid: '3afbc-20kksksha-ck1li4',
-              text: 'Everything zura thinks will be good'
-            }
-          ]
-        }
-      },
-    ],
-  }
-]
-
 const store = createStore({
   state: {
     user: {
       data: {},
       token: sessionStorage.getItem('_tok')
     },
-    surveys: [...tmpSurveys],
+    surveys: {
+      loading: false,
+      data: []
+    },
     questionTypes: ['text', 'select', 'radio', 'checkbox', 'textarea']
   },
   getters: {
@@ -90,17 +29,23 @@ const store = createStore({
       sessionStorage.setItem('_tok', payload.token);
     },
     saveSurvey: (state, survey) => {
-      state.surveys = [...state.surveys, survey];
+      state.surveys.data = [...state.surveys, survey];
     },
     updateSurvey: (state, survey) => {
-      state.surveys = state.surveys.map(item => {
+      state.surveys.data = state.surveys.data.map(item => {
         return item.id === survey.id? survey: item;
       });
     },
     deleteSurvey: (state, id) => {
-      state.surveys = state.surveys.filter(survey => {
+      state.surveys.data = state.surveys.data.filter(survey => {
         return survey.id !== id;
       });
+    },
+    setSurveysLoading: (state, status) => {
+      state.surveys.data.loading = status;
+    },
+    setSurveys: (state, surveys) => {
+      state.surveys.data = surveys.data;
     }
   },
   actions: {
@@ -162,6 +107,22 @@ const store = createStore({
 
       // return to caller
       return response.status;
+    },
+    getSurveys: async ({ commit, state }) => {
+      // show loading spinner
+      commit('setSurveysLoading', true);
+
+      const { data } = await api.get('/survey', {
+        headers: {
+          Authorization: `Bearer ${state.user.token}`
+        }
+      });
+
+      // stop loading spinner
+      commit('setSurveysLoading', false);
+
+      commit('setSurveys', data);
+      return data;
     }
   },
   modules: {}
