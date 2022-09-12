@@ -5,9 +5,12 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreSurveyRequest;
 use App\Http\Requests\UpdateSurveyRequest;
 use App\Http\Resources\SurveyResource;
-use App\Models\Survey;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
+use App\Models\Survey;
+use App\Models\SurveyQuestion;
+use Illuminate\Support\Arr;
 
 class SurveyController extends Controller
 {
@@ -40,6 +43,13 @@ class SurveyController extends Controller
         }
 
         $survey = Survey::create($validated);
+
+        foreach(request('questions') as $question) {
+            $question['survey_id'] = $survey->id;
+
+            $this->createQuestion($question);
+        }
+
         return new SurveyResource($survey);
     }
 
@@ -71,6 +81,7 @@ class SurveyController extends Controller
     {
         $validated = $request->validated();
 
+        // only allow image that is of base64 format - this is for case when it's an actualy image url and not encoded blob
         if($validated['image'] && preg_match('/^data:image/', $validated['image'])) {
 
             $imagePath = $this->saveEncodedImage($validated['image']);
@@ -82,6 +93,38 @@ class SurveyController extends Controller
         }
 
         $survey->update($validated);
+
+        // get ids as plain array of existing questions
+        $existingIds = $survey->questions()->pluck('id')->toArray();
+
+        // get ids as plain array of new question
+        $newIds = Arr::pluck(request('questions'), 'id');
+
+        // find questions to delete
+        $toDelete = array_diff($existingIds, $newIds);
+
+        // find questions to add
+        $toAdd = array_diff($newIds, $existingIds);
+
+        // delete questions by ids
+        SurveyQuestion::destroy($toDelete);
+
+        // Create new questions
+        foreach(request('questions') as $question) {
+            if(in_array($question['id'], $toAdd)) {
+                $question['survey_id'] = $survey->id;
+                $this->createQuestion($question);
+            }
+        }
+
+        // update existing questions
+        $questionMap = collect(request('questions'))->keyBy('id');
+        foreach($survey->questions as $question) {
+            if(isset($questionMap[$question->id])) {
+                $this->updateQuestion($question, $questionMap[$question->id]);
+            }
+        }
+
         return new SurveyResource($survey);
     }
 
@@ -106,6 +149,53 @@ class SurveyController extends Controller
 
         $survey->delete();
         return response()->json('', 204);
+    }
+
+    private function createQuestion($question)
+    {
+        if(is_array($question['data'])) {
+            $question['data'] = json_encode($question['data']);
+        }
+
+        // validate input
+        $validQuestion = validator($question, [
+            'question' => ['required', 'string'],
+            'type' => ['required', Rule::in([
+                SurveyQuestion::TYPE_TEXTINPUT,
+                SurveyQuestion::TYPE_TEXTAREA,
+                SurveyQuestion::TYPE_SELECT,
+                SurveyQuestion::TYPE_RADIO,
+                SurveyQuestion::TYPE_CHECKBOX
+            ])],
+            'description' => ['nullable', 'string'],
+            'data' => ['present'],
+            'survey_id' => Rule::exists('surveys', 'id')
+        ])->validated();
+
+        return SurveyQuestion::create($validQuestion);
+    }
+
+    private function updateQuestion(SurveyQuestion $question, $data)
+    {
+        if(is_array($data['data'])) {
+            $data['data'] = json_encode($data['data']);
+        }
+
+        // validate input
+        $validQuestion = validator($data, [
+            'question' => ['required', 'string'],
+            'type' => ['required', Rule::in([
+                SurveyQuestion::TYPE_TEXTINPUT,
+                SurveyQuestion::TYPE_TEXTAREA,
+                SurveyQuestion::TYPE_SELECT,
+                SurveyQuestion::TYPE_RADIO,
+                SurveyQuestion::TYPE_CHECKBOX
+            ])],
+            'description' => ['nullable', 'string'],
+            'data' => ['present'],
+        ])->validated();
+
+        return $question->update($validQuestion);
     }
 
     private function saveEncodedImage($imageStr)
