@@ -16,7 +16,7 @@ class UpdateSurveyRequest extends FormRequest
     {
         $survey = $this->route('survey');
 
-        return $this->user()->id !== $survey->user_id;
+        return $this->user()->id === $survey->user_id;
     }
 
     /**
@@ -33,7 +33,6 @@ class UpdateSurveyRequest extends FormRequest
             'status' => ['required', 'boolean'],
             'description' => ['nullable', 'string'],
             'expire_date' => ['nullable', 'date', 'after:tomorrow'],
-            'questions' => ['array']
         ];
     }
 

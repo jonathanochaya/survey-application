@@ -106,6 +106,8 @@
     </Disclosure>
 
     <router-view></router-view>
+
+    <Notification />
   </div>
 </template>
 
@@ -116,6 +118,8 @@ import { useRouter } from 'vue-router';
 
 import { Disclosure, DisclosureButton, DisclosurePanel, Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue'
 import { Bars3Icon, XMarkIcon } from '@heroicons/vue/24/outline'
+
+import Notification from './Notification.vue';
 
 const store = useStore();
 const router = useRouter();

@@ -82,7 +82,7 @@ class SurveyController extends Controller
         $validated = $request->validated();
 
         // only allow image that is of base64 format - this is for case when it's an actualy image url and not encoded blob
-        if($validated['image'] && preg_match('/^data:image/', $validated['image'])) {
+        if(isset($validated['image']) && preg_match('/^data:image/', $validated['image'])) {
 
             $imagePath = $this->saveEncodedImage($validated['image']);
             $validated['image'] = $imagePath;
@@ -177,7 +177,7 @@ class SurveyController extends Controller
 
     private function updateQuestion(SurveyQuestion $question, $data)
     {
-        if(is_array($data['data'])) {
+        if(isset($data['data']) && is_array($data['data'])) {
             $data['data'] = json_encode($data['data']);
         }
 

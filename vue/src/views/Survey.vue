@@ -13,8 +13,9 @@
       </div>
     </template>
 
-    <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3">
-      <SurveyListItem @delete="deleteSurvey" v-for="survey in surveys" :key="survey.id" :survey="survey" />
+    <div v-if="surveys.loading" class="flex justify-center">Loading...</div>
+    <div v-else class="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3">
+      <SurveyListItem @delete="deleteSurvey" class="opacity-0 animate-fade-in-down" v-for="(survey, ind) in surveys.data" :key="survey.id" :style="{ animationDelay: `${ind * 0.2}s` }" :survey="survey" />
     </div>
   </DashboardPageComponentVue>
 </template>
@@ -28,7 +29,7 @@
 
   const store = useStore();
 
-  const surveys = computed(() => store.state.surveys.data);
+  const surveys = computed(() => store.state.surveys);
 
   const deleteSurvey = (survey) => {
     if(confirm(`Are you sure you want to delete this survey?`)) {

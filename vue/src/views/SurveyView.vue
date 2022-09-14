@@ -239,6 +239,11 @@
       if(result) {
         model.value = result;
 
+        store.commit('notify', {
+          type: 'success',
+          message: 'Survey was successfully updated'
+        });
+
         router.push({
           name: "SurveyView",
           params: {id: result.id},
