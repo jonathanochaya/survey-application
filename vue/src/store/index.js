@@ -9,7 +9,8 @@ const store = createStore({
     },
     surveys: {
       loading: false,
-      data: []
+      data: [],
+      links: []
     },
     questionTypes: ['text', 'select', 'radio', 'checkbox', 'textarea'],
     notification: {
@@ -60,6 +61,7 @@ const store = createStore({
     },
     setSurveys: (state, surveys) => {
       state.surveys.data = surveys.data;
+      state.surveys.links = surveys.meta.links; // pagination links
     }
   },
   actions: {
@@ -122,11 +124,12 @@ const store = createStore({
       // return to caller
       return response.status;
     },
-    getSurveys: async ({ commit, state }) => {
+    getSurveys: async ({ commit, state }, { url = null } = {}) => {
       // show loading spinner
       commit('setSurveysLoading', true);
 
-      const { data } = await api.get('/survey', {
+      url = url || '/survey';
+      const { data } = await api.get(url, {
         headers: {
           Authorization: `Bearer ${state.user.token}`
         }
