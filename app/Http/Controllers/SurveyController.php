@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreSurveyAnswerRequest;
 use App\Http\Requests\StoreSurveyRequest;
 use App\Http\Requests\UpdateSurveyRequest;
 use App\Http\Resources\SurveyResource;
@@ -9,7 +10,9 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use App\Models\Survey;
+use App\Models\SurveyAnswer;
 use App\Models\SurveyQuestion;
+use App\Models\SurveyQuestionAnswer;
 use Illuminate\Support\Arr;
 
 class SurveyController extends Controller
@@ -201,6 +204,35 @@ class SurveyController extends Controller
         ])->validated();
 
         return $question->update($validQuestion);
+    }
+
+    public function storeAnswer(StoreSurveyAnswerRequest $request, Survey $survey)
+    {
+        $validatedAnswers = $request->validated();
+
+        $surveyAnswer = SurveyAnswer::create([
+            'survey_id' => $survey->id,
+            'start_date' => now(),
+            'end_date' => now()
+        ]);
+
+        foreach($validatedAnswers['answers'] as $question_id => $answer) {
+            $question = SurveyQuestion::where(['id' => $question_id, 'survey_id' => $survey->id])->get();
+
+            if(!$question) {
+                return response("Invalid question ID: {$question_id}");
+            }
+
+            $data = [
+                'survey_question_id' => $question_id,
+                'survey_answer_id' => $surveyAnswer->id,
+                'answer' => is_array($answer)? json_encode($answer): $answer
+            ];
+
+            SurveyQuestionAnswer::create($data);
+        }
+
+        return response('', 201);
     }
 
     private function saveEncodedImage($imageStr)

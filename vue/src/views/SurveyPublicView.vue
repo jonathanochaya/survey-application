@@ -59,7 +59,6 @@
   store.dispatch('getSurveyBySlug', route.params.slug);
 
   const submitSurvey = async () => {
-    console.log(ansers.value);
 
     const response = await store.dispatch('saveSurveyAnswer', {
       surveyId: survey.value.id,

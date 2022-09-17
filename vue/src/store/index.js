@@ -182,6 +182,9 @@ const store = createStore({
 
       // return to caller
       return {status: response.status, survey: response.data};
+    },
+    saveSurveyAnswer: async ({ commit }, { surveyId, answers }) => {
+      return await api.post(`/survey/${surveyId}/answer`, { answers });
     }
   },
   modules: {}
