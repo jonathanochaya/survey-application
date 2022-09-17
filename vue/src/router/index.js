@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
 
 import DashboardLayout from '../components/DashboardLayout.vue';
+import SurveyPublicView from '../views/SurveyPublicView.vue';
 import AuthLayout from '../components/AuthLayout.vue';
 import SurveyView from '../views/SurveyView.vue';
 import Dashboard from '../views/Dashboard.vue';
@@ -55,6 +56,11 @@ const routes = [
         name: 'Register',
         component: Register,
         meta: { authGuest: true }
+      },
+      {
+        path: '/view/survey/:slug',
+        name: 'SurveyPublicView',
+        component: SurveyPublicView
       }
     ],
     meta: { authGuest: true }

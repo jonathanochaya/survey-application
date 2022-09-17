@@ -12,6 +12,10 @@ const store = createStore({
       data: [],
       links: []
     },
+    currentSurvey: {
+      data: {},
+      loading: false,
+    },
     questionTypes: ['text', 'select', 'radio', 'checkbox', 'textarea'],
     notification: {
       show: false,
@@ -62,7 +66,13 @@ const store = createStore({
     setSurveys: (state, surveys) => {
       state.surveys.data = surveys.data;
       state.surveys.links = surveys.meta.links; // pagination links
-    }
+    },
+    setCurrentSurveyLoading: (state, loading) => {
+      state.currentSurvey.loading = loading;
+    },
+    setCurrentSurvey: (state, survey) => {
+      state.currentSurvey.data = survey.data;
+    },
   },
   actions: {
     register: async ({ commit }, user) => {
@@ -140,6 +150,38 @@ const store = createStore({
 
       commit('setSurveys', data);
       return data;
+    },
+    getSurveyBySlug: async ({ commit }, slug) => {
+      commit('setCurrentSurveyLoading', true);
+
+      try{
+        const res = await api.get(`/survey-by-slug/${slug}`);
+
+        if(res) {
+          commit('setCurrentSurvey', res.data);
+          commit('setCurrentSurveyLoading', false);
+        }
+      } catch (err) {
+        commit('setCurrentSurveyLoading', false);
+        throw err;
+      }
+    },
+    getSurveyById: async ({ commit, state }, id) => {
+      commit('setCurrentSurveyLoading', true);
+
+      const response = await api.get(`/survey/${id}`, {
+        headers: {
+          Authorization: `Bearer ${state.user.token}`,
+        }
+      });
+
+      commit('setCurrentSurveyLoading', false);
+
+      // reduce the state
+      if(response.status === 200) commit('setCurrentSurvey', response.data);
+
+      // return to caller
+      return {status: response.status, survey: response.data};
     }
   },
   modules: {}

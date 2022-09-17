@@ -70,6 +70,11 @@ class SurveyController extends Controller
         return new SurveyResource($survey);
     }
 
+    public function viewSlug(Survey $survey)
+    {
+        return new SurveyResource($survey);
+    }
+
     /**
      * Update the specified resource in storage.
      *

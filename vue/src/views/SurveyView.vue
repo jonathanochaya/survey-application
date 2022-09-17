@@ -183,13 +183,29 @@
     questions: [],
   });
 
+  // fetch survey by id
+  const fetchSurvey = async (model, surveyId) => {
+    try {
+      const { status, survey } = await store.dispatch('getSurveyById', surveyId);
+
+      if(status === 200) model.value = survey.data;
+    } catch (err) {
+      console.log('error occured'); // log error
+    }
+  }
+
   // check whether user is updating survey/viewing
   if(route.params.id) {
+    const surveyId = route.params.id;
+
     const survey = store.state.surveys.data.find((survey) => {
       return survey.id === parseInt(route.params.id);
     });
 
-    if(survey) model.value = survey;
+    if(survey)  model.value = survey;
+    if(!survey) {
+      fetchSurvey(model, surveyId);
+    }
   }
 
   // new survey question template
