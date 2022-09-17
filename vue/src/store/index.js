@@ -4,13 +4,17 @@ import api from '../apis';
 const store = createStore({
   state: {
     user: {
-      data: {},
+      data: sessionStorage.getItem('_user'),
       token: sessionStorage.getItem('_tok')
     },
     surveys: {
       loading: false,
       data: [],
       links: []
+    },
+    dashboard: {
+      loading: false,
+      data: {}
     },
     currentSurvey: {
       data: {},
@@ -39,12 +43,14 @@ const store = createStore({
     logout: (state) => {
       state.user.data = {};
       state.user.token = null;
+      sessionStorage.removeItem('_user')
       sessionStorage.removeItem('_tok');
     },
     setUser: (state, payload) => {
       state.user.data = payload.user,
       state.user.token = payload.token
 
+      sessionStorage.setItem('_user', payload.user);
       sessionStorage.setItem('_tok', payload.token);
     },
     saveSurvey: (state, survey) => {
@@ -73,6 +79,12 @@ const store = createStore({
     setCurrentSurvey: (state, survey) => {
       state.currentSurvey.data = survey.data;
     },
+    dashboardLoading: (state, loading) => {
+      state.dashboard.loading = loading;
+    },
+    setDashboardData: (state, data) => {
+      state.dashboard.data = data;
+    }
   },
   actions: {
     register: async ({ commit }, user) => {
@@ -185,6 +197,23 @@ const store = createStore({
     },
     saveSurveyAnswer: async ({ commit }, { surveyId, answers }) => {
       return await api.post(`/survey/${surveyId}/answer`, { answers });
+    },
+    getDashboardData: async ({ commit, state }) => {
+      commit('dashboardLoading', true);
+      try {
+        const response = await api.get(`/dashboard`, {
+          headers: {
+            Authorization: `Bearer ${state.user.token}`,
+          }
+        });
+
+        commit('dashboardLoading', false);
+        commit('setDashboardData', response.data);
+
+        return response;
+      } catch (err) {
+        commit('dashboardLoading', false);
+      }
     }
   },
   modules: {}

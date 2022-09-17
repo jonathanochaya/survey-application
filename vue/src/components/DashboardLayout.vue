@@ -129,7 +129,7 @@ const navigation = [
   { name: 'Surveys', to: {name: 'Surveys'}},
 ]
 
-const user = computed(() => store.state.user.data).value;
+const user = computed(() => store.state.user.data);
 
 const logout = async () => {
   try {

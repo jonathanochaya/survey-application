@@ -13,4 +13,9 @@ class SurveyAnswer extends Model
     const UPDATED_AT = null;
 
     protected $guarded = [];
+
+    public function survey()
+    {
+        return $this->belongsTo(Survey::class);
+    }
 }
