@@ -9,8 +9,14 @@
   </div>
 
   <form class="mt-8 space-y-6" @submit.prevent="register">
-    <input type="hidden" name="remember" value="true" />
 
+    <div v-if="Object.keys(errors).length">
+      <div v-for="(field, i) of Object.keys(errors)" :key="i" class="flex items-center justify-between my-3 py-3 px-5 bg-red-500 text-white rounded">
+        {{ Object.values(errors[field])[0] }}
+      </div>
+    </div>
+
+    <input type="hidden" name="remember" value="true" />
     <div class="-space-y-px rounded-md shadow-sm">
       <div>
         <label for="full-name" class="sr-only">Full name</label>
@@ -36,6 +42,7 @@
     <div>
       <button type="submit" class="group relative flex w-full justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
         Sign up
+        <LoadingIcon v-if="loading"></LoadingIcon>
       </button>
     </div>
 
@@ -44,8 +51,11 @@
 
 <script setup>
 
+import { ref } from 'vue';
 import { useStore } from 'vuex';
 import { useRouter } from 'vue-router';
+
+import LoadingIcon from '../components/LoadingIcon.vue';
 
 const store = useStore();
 const router = useRouter();
@@ -57,10 +67,22 @@ const user = {
   password_confirmation: '',
 };
 
-const register = async (ev) => {
-  const response = await store.dispatch('register', user);
+const errors = ref({});
+const loading = ref(false);
 
-  if(response) router.push({ name: 'Dashboard' });
+const register = async (ev) => {
+  try {
+    loading.value = true;
+    const response = await store.dispatch('register', user);
+
+    loading.value = false;
+    if(response) router.push({ name: 'Dashboard' });
+  } catch (err) {
+    loading.value = false;
+    if(err.response.status === 422) {
+      errors.value = err.response.data.errors;
+    }
+  }
 }
 
 </script>
